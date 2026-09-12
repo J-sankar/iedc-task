@@ -3,7 +3,7 @@ import { ApiError } from "../middlewares/errorHandler.js";
 const VALID_STATUSES = ["IDEATION", "PROTOTYPE", "SEED_FUNDED"];
 
 export function validateCreateProject(req, res, next) {
-  const { title, domain, abstract, status } = req.body;
+  const { title, domain, abstract, status } = req.body || {};
   const missing = [];
 
   if (!title || typeof title !== "string" || !title.trim()) missing.push("title");
@@ -22,7 +22,7 @@ export function validateCreateProject(req, res, next) {
 }
 
 export function validateUpdateProjectStatus(req, res, next) {
-  const { status } = req.body;
+  const { status } = req.body || {};
 
   if (!status || !VALID_STATUSES.includes(status)) {
     return next(new ApiError(400, `status must be one of: ${VALID_STATUSES.join(", ")}`));
