@@ -1,0 +1,119 @@
+datasource db {
+  provider = "postgresql"
+  schemas  = ["iedc"]
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  STUDENT
+  FACULTY
+  ADMIN
+
+  @@schema("iedc")
+}
+
+enum ProjectStatus {
+  IDEATION
+  PROTOTYPE
+  SEED_FUNDED
+
+  @@schema("iedc")
+}
+
+enum RSVPStatus {
+  REGISTERED
+  CANCELLED
+  ATTENDED
+
+  @@schema("iedc")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  studentId String?  @unique
+  role      UserRole @default(STUDENT)
+
+  projectsLed Project[]
+  memberships ProjectMember[]
+  rsvps       EventRSVP[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("iedc")
+}
+
+model Project {
+  id         String        @id @default(uuid())
+  title      String
+  domain     String
+  abstract   String
+  status     ProjectStatus @default(IDEATION)
+  teamLeadId String
+
+  teamLead User            @relation(fields: [teamLeadId], references: [id])
+  members  ProjectMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([teamLeadId])
+  @@index([status])
+  @@index([domain])
+  @@schema("iedc")
+}
+
+model ProjectMember {
+  id        String   @id @default(uuid())
+  projectId String
+  userId    String
+  role      String
+  joinedAt  DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+  @@schema("iedc")
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  eventDate   DateTime
+  venue       String?
+  capacity    Int?
+
+  rsvps EventRSVP[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventDate])
+  @@schema("iedc")
+}
+
+model EventRSVP {
+  id           String     @id @default(uuid())
+  eventId      String
+  userId       String
+  status       RSVPStatus @default(REGISTERED)
+  registeredAt DateTime   @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@schema("iedc")
+}
