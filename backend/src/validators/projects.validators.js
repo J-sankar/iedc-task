@@ -14,8 +14,18 @@ export function validateCreateProject(req, res, next) {
   if (missing.length > 0) {
     return next(new ApiError(400, `Missing or invalid required field(s): ${missing.join(", ")}`));
   }
-
+  
   if (status !== undefined && !VALID_STATUSES.includes(status)) {
+    return next(new ApiError(400, `status must be one of: ${VALID_STATUSES.join(", ")}`));
+  }
+
+  next();
+}
+
+export function validateUpdateProjectStatus(req, res, next) {
+  const { status } = req.body;
+
+  if (!status || !VALID_STATUSES.includes(status)) {
     return next(new ApiError(400, `status must be one of: ${VALID_STATUSES.join(", ")}`));
   }
 

@@ -3,21 +3,25 @@ import { ApiError } from "../middlewares/errorHandler.js";
 export const listProjects = async (req, res, next) => {
     try {
         const { status, domain } = req.query
+        const where = {}
         if (status) where.status = status;
         if (domain) where.domain = { equals: domain, mode: "insensitive" };
+        let projects;
 
-        const projects = await prisma.project.findMany({
+
+        projects = await prisma.project.findMany({
             where,
             include: {
                 teamLead: { select: { id: true, name: true, email: true } },
             },
             orderBy: { createdAt: "desc" },
         });
+
         console.log(`Obtained ${projects.length} projects`)
 
         res.json({ count: projects.length, projects });
     } catch (error) {
-        next(err);
+        next(error);
     }
 }
 
@@ -61,7 +65,7 @@ export const createProject = async (req, res, next) => {
 
 export const getProject = async (req, res, next) => {
     const id = req.params.id
-    try{
+    try {
 
         const project = await prisma.project.findFirst({
             where: { id },
@@ -73,8 +77,41 @@ export const getProject = async (req, res, next) => {
             throw new ApiError(404, "Project not found")
         }
         console.log(`Obtained project details : id   ${id}`)
-        return res.status(200).json({success:true, data: project})
-    }catch (err) {
+        return res.status(200).json({ success: true, data: project })
+    } catch (err) {
         next(err)
     }
 }
+
+export const updateProjectStatus = async (req, res, next) => {
+    try {
+        const project = await prisma.project.update({
+            where: { id: req.params.id },
+            data: { status: req.body.status },
+            include: {
+                teamLead: { select: { id: true, name: true, email: true } },
+            },
+        });
+        console.log(`updated project status : id: ${project.id} | status: ${project.status} `)
+        return res.status(200).json({ success: true, data: project });
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const deleteProject = async (req, res, next) => {
+    try {
+        const project = await prisma.project.delete({
+            where: { id: req.params.id },
+        });
+
+        console.log(`Deleted project: id ${project.id}`);
+        return res.status(200).json({
+            success: true,
+            message: "Project deleted successfully",
+            data: project,
+        });
+    } catch (err) {
+        next(err);
+    }
+};
