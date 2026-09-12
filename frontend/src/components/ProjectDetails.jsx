@@ -1,0 +1,5 @@
+import { STATUSES } from '../lib/api'
+
+export default function ProjectDetails({ project, isOwner, onBack, onUpdate, onDelete }) {
+  return <section className="details-page"><button className="back-button" onClick={onBack}>Back to projects</button><p className="eyebrow">Project details</p><h1>{project.title}</h1><div className="detail-grid"><div><span className="detail-label">Abstract</span><p className="detail-copy">{project.abstract}</p></div><div className="detail-aside"><span className="detail-label">Domain</span><strong>{project.domain}</strong><span className="detail-label">Team lead</span><strong>{project.teamLead?.name || 'Unknown'}</strong><span className="detail-label">Status</span>{isOwner ? <select value={project.status} onChange={(event) => onUpdate(project, event.target.value)}>{STATUSES.map((status) => <option key={status}>{status}</option>)}</select> : <strong>{project.status}</strong>}{isOwner && <button className="danger-button" onClick={() => onDelete(project)}>Delete project</button>}</div></div></section>
+}
