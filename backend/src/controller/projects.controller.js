@@ -28,11 +28,11 @@ export const listProjects = async (req, res, next) => {
 
 export const createProject = async (req, res, next) => {
     try {
-        const { title, domain, teamLeadId, abstract, status } = req.body;
+        const { title, domain, abstract, status } = req.body;
         const where = {}
         where.title = title;
         where.domain = domain;
-        where.teamLeadId = teamLeadId;
+        where.teamLeadId = req.user.id;
         where.abstract = abstract;
 
         const existingProject = await prisma.project.findFirst({
@@ -46,7 +46,7 @@ export const createProject = async (req, res, next) => {
                 title: title.trim(),
                 domain: domain.trim(),
                 abstract: abstract.trim(),
-                teamLeadId,
+                teamLeadId: req.user.id,
                 ...(status && { status }),
             },
             include: {
@@ -85,6 +85,15 @@ export const getProject = async (req, res, next) => {
 
 export const updateProjectStatus = async (req, res, next) => {
     try {
+        const existingProject = await prisma.project.findUnique({
+            where: { id: req.params.id }
+        })
+        if (!existingProject) {
+            throw new ApiError(404, "Project not found")
+        }
+        if (existingProject.teamLeadId != req.user.id) {
+            throw new ApiError(401, "You are not authorized for this action")
+        }
         const project = await prisma.project.update({
             where: { id: req.params.id },
             data: { status: req.body.status },
@@ -101,6 +110,15 @@ export const updateProjectStatus = async (req, res, next) => {
 
 export const deleteProject = async (req, res, next) => {
     try {
+        const existingProject = await prisma.project.findUnique({
+            where: { id: req.params.id }
+        })
+        if (!existingProject) {
+            throw new ApiError(404, "Project not found")
+        }
+        if (existingProject.teamLeadId != req.user.id) {
+            throw new ApiError(401, "You are not authorized for this action")
+        }
         const project = await prisma.project.delete({
             where: { id: req.params.id },
         });

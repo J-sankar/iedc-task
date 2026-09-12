@@ -3,12 +3,11 @@ import { ApiError } from "../middlewares/errorHandler.js";
 const VALID_STATUSES = ["IDEATION", "PROTOTYPE", "SEED_FUNDED"];
 
 export function validateCreateProject(req, res, next) {
-  const { title, domain, teamLeadId, abstract, status } = req.body;
+  const { title, domain, abstract, status } = req.body;
   const missing = [];
 
   if (!title || typeof title !== "string" || !title.trim()) missing.push("title");
   if (!domain || typeof domain !== "string" || !domain.trim()) missing.push("domain");
-  if (!teamLeadId || typeof teamLeadId !== "string") missing.push("teamLeadId");
   if (!abstract || typeof abstract !== "string" || !abstract.trim()) missing.push("abstract");
 
   if (missing.length > 0) {

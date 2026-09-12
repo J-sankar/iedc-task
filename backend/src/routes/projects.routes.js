@@ -1,4 +1,5 @@
 import { Router } from "express"; 
+import { requireAuth } from "../middlewares/auth.js";
 import {
 	listProjects,
 	createProject,
@@ -13,9 +14,9 @@ import {
 const router = Router()
 
 router.get("/", listProjects)
-router.post("/", validateCreateProject,createProject )
 router.get("/:id", getProject)
-router.put("/:id", validateUpdateProjectStatus, updateProjectStatus)
-router.delete("/:id", deleteProject)
+router.post("/", requireAuth,validateCreateProject,createProject )
+router.put("/:id", requireAuth,validateUpdateProjectStatus, updateProjectStatus)
+router.delete("/:id", requireAuth,deleteProject)
 
 export default router
